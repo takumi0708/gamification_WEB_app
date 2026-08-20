@@ -25,6 +25,9 @@ function App(){
   // 最初は「ナノコネ」
   const [target, setTarget] = useState('ナノコネ')
 
+  // 削除ノード
+  const [deleteTarget, setDeleteTarget] = useState("ナノコネ")
+
   // グラフに入れるデータ
   const graphData = {
     nodes: nodes,
@@ -34,7 +37,7 @@ function App(){
   // ボタン押されたとき実行される関数（アロー関数）
   const addNode = () => {
     // 何もないとき用
-    if(input == " ") return
+    if(input.trim() === "") return
 
     // 現在のノードに追加
     setNodes([
@@ -56,57 +59,89 @@ function App(){
     //ノード追加後、入力欄を空に
     setInput("");
   }
+  // 削除関数
+  const deleteNode = () =>{
+    
+    // nodes から選択したノードを削除
+    setNodes(
+      //filter() は、条件に合うデータだけ残す処理
+      // deleteTarget以外をnodeに入れる
+      nodes.filter((node) => node.id !== deleteTarget)
+    )
+  
+    // 削除したノードにつながるlinkも削除
+    setLinks(
+      links.filter((link) =>
+        // deleteTargetがsource target以外の部分残す
+        link.source !== deleteTarget &&
+        link.target !== deleteTarget
+      )
+    )
+    }
+
   //ここからReact
-  return(
-    <div>
-      {/*入力設定 */}
-      <input 
-      type="text" 
-      value={input}
-      // 文字が入力されるたびにinput Stateを更新
-      onChange={(e) => setInput(e.target.value)}
-
-      //入力欄の説明
-      placeholder="追加する情報を入力"
-      />
-
-      {/*接続先 
-      複数の候補から1つ選ぶプルダウン
-      */}
-      <select 
-      value={target}
-      //選択肢が変更されたときの処理
-      onChange={(e) => setTarget(e.target.value)}
-      >   
-          {/*配列をループして一覧に map */}
-         {nodes.map((node) => (
-          <option key={node.id} value={node.id}>
-            {node.id}
-          </option>
-        ))}
-      </select>
-
-      {/*クリックするとaddNode */}
-      <button onClick={addNode}>
-        追加
-      </button>
-
-      {/*グラフ表示 */}
+  return (
+    <div> 
+  
+      {/* 追加エリア */}
+      <div>
+        <h3>情報を追加</h3>
+  
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="追加する情報を入力"
+        />
+  
+        <select
+          value={target}
+          onChange={(e) => setTarget(e.target.value)}
+        >
+          {nodes.map((node) => (
+            <option key={node.id} value={node.id}>
+              {node.id}
+            </option>
+          ))}
+        </select>
+  
+        <button onClick={addNode}>
+          追加
+        </button>
+      </div>
+  
+  
+      {/* 削除エリア */}
+      <div>
+        <h3>情報を削除</h3>
+  
+        <select
+          value={deleteTarget}
+          onChange={(e) => setDeleteTarget(e.target.value)}
+        >
+          {nodes.map((node) => (
+            <option key={node.id} value={node.id}>
+              {node.id}
+            </option>
+          ))}
+        </select>
+  
+        <button onClick={deleteNode}>
+          削除
+        </button>
+      </div>
+  
+  
+      {/* グラフ */}
       <ForceGraph2D
-
-        // nodesとlinksを渡す
         graphData={graphData}
-
-        // ノードにマウスを合わせたときidを表示
         nodeLabel="id"
-
-        // linkの色を白にする
         linkColor={() => 'white'}
-
-        // linkの太さ
         linkWidth={1}
       />
+  
     </div>
   )
+  
 }
 export default App
