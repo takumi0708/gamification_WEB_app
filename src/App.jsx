@@ -1,15 +1,46 @@
 import { useState } from "react"
 import ForceGraph2D from "react-force-graph-2d"
+import ReactMarkdown from "react-markdown"
 
 function App(){
   // nodes      : 現在のノード一覧
   // setNodes   : nodesを書き換える関数
   const [nodes, setNodes] = useState([
-    {id: "ナノコネ"},
-    {id: "業界研究"},
-    {id: "企業分析"},
-    {id: "ゲーミフィケーション"},
+    {id: "ナノコネ",
+    memo: `# ナノコネ
+## 特徴
+- ゲーミフィケーション
+    - Web開発
+    - インターン`
+  },
+    {id: "業界研究",
+    memo: `# ナノコネ
+
+    ## 特徴
+    -  ゲーミフィケーション
+    - Web開発
+    - インターン
+    `},
+    {id: "企業分析",
+    memo: `# ナノコネ
+
+    ## 特徴
+    -  ゲーミフィケーション
+    - Web開発
+    - インターン
+    `},
+    {id: "ゲーミフィケーション",
+    memo: `# ナノコネ
+
+    ## 特徴
+    -  ゲーミフィケーション
+    - Web開発
+    - インターン
+    `},
   ])
+
+  // クリックされたノード保存
+  const [selectedNode, setSelectedNode] = useState(null)
 
   // リンク一覧
   const [links, setLinks] = useState([
@@ -130,6 +161,21 @@ function App(){
           削除
         </button>
       </div>
+
+       {/* 選択したノードのメモ */}
+       {selectedNode && (
+        <div>
+          {/* メモがあればMarkdownで表示 */}
+          {selectedNode.memo ? (
+            <ReactMarkdown>
+            {selectedNode.memo}
+          </ReactMarkdown>
+          ) : (
+            <p>メモはありません。</p>
+          )
+        }
+        </div>
+      )}    
   
   
       {/* グラフ */}
@@ -174,11 +220,16 @@ function App(){
             canva は左上が（0,0）
             */
             node.x - textWidth / 2, //ノードの左　文字幅の半分だけ
-            node.y + 12 //ノードの上
+            node.y + 12 //ノードの下
           )
               }}
+
+          onNodeClick={(node) => {
+                setSelectedNode(node)
+              }}
       />
-  
+
+        
     </div>
   )
   
