@@ -1,237 +1,219 @@
 import { useState } from "react"
-import ForceGraph2D from "react-force-graph-2d"
-import ReactMarkdown from "react-markdown"
+
+import NodeForm from "./components/NodeForm"
+import Graph from "./components/Graph"
+import MemoPanel from "./components/MemoPanel"
+
 
 function App(){
-  // nodes      : 現在のノード一覧
-  // setNodes   : nodesを書き換える関数
+  // ==================================================
+  // State defnition
+  // ==================================================
+  
+  // ノードの定義
   const [nodes, setNodes] = useState([
-    {id: "ナノコネ",
-    memo: `# ナノコネ
+    {
+      id: "ナノコネ",
+      memo: `# ナノコネ
 ## 特徴
 - ゲーミフィケーション
-    - Web開発
-    - インターン`
-  },
-    {id: "業界研究",
-    memo: `# ナノコネ
+- WEBアプリ開発
+- インターン 
+`
+    },
 
-    ## 特徴
-    -  ゲーミフィケーション
-    - Web開発
-    - インターン
-    `},
-    {id: "企業分析",
-    memo: `# ナノコネ
+    {
+      id: "業界研究",
+      memo: `# 業界研究`
+    },
 
-    ## 特徴
-    -  ゲーミフィケーション
-    - Web開発
-    - インターン
-    `},
-    {id: "ゲーミフィケーション",
-    memo: `# ナノコネ
+    {
+      id: "企業研究",
+      memo: `# 企業研究`
+    },
 
-    ## 特徴
-    -  ゲーミフィケーション
-    - Web開発
-    - インターン
-    `},
+    {
+      id: "ゲーミフィケーション",
+      memo: `# GF`
+    }
+
   ])
 
-  // クリックされたノード保存
-  const [selectedNode, setSelectedNode] = useState(null)
-
-  // リンク一覧
+  // リンクの定義
   const [links, setLinks] = useState([
-    { source: 'ナノコネ', target: '業界研究' },
-    { source: 'ナノコネ', target: 'ゲーミフィケーション' },
-    { source: 'ナノコネ', target: '企業分析' }
+    { source: "ナノコネ", target: "業界研究" },
+    { source: "ナノコネ", target: "ゲーミフィケーション" },
+    { source: "ナノコネ", target: "企業分析" },
   ])
 
-  //最初は空文字
+  //入力 from
   const [input, setInput] = useState("")
 
-  // 接続先
-  // 最初は「ナノコネ」
-  const [target, setTarget] = useState('ナノコネ')
+  // 追加　to
+  const [target, setTarget] =
+    useState("ナノコネ")
 
-  // 削除ノード
-  const [deleteTarget, setDeleteTarget] = useState("ナノコネ")
+  // 削除 to
+  const [deleteTarget, setDeleteTarget] =
+    useState("ナノコネ")
 
-  // グラフに入れるデータ
+  // 選択
+  const [selectedNode, setSelectedNode] =
+    useState(null)
+
+  // 編集
+  const [editMemo, setEditMemo] =
+    useState("")
+
+  // ==================================================
+  // Graph Data
+  // ==================================================
+
   const graphData = {
-    nodes: nodes,
-    links: links,
+    nodes,
+    links
   }
 
-  // ボタン押されたとき実行される関数（アロー関数）
+
+  // ==================================================
+  // Add Node and link
+  // ==================================================
+
   const addNode = () => {
-    // 何もないとき用
-    if(input.trim() === "") return
+    //　空文字ならば何もしない
+    if(input.trim() == "") return
 
-    // 現在のノードに追加
+    // ノード追加(変更) 既存のものに追加する
     setNodes([
-      // 今あるnodes をすべて展開
       ...nodes,
-      {id: input},
-    ])
-
-    // 現在のリンクに追加
-    setLinks([
-      ...links,
-      //既存のlinksに追加する内容
       {
-        source: target, // from
-        target: input, // to
+        id: input,
+        memo: "",
       },
     ])
 
-    //ノード追加後、入力欄を空に
-    setInput("");
+    // リンク追加
+    setLinks([
+      ...links,
+      {
+        source: target, // select で選んだ既存のノード
+        target: input,
+      },
+    ])
+    // 追加したら空にする
+    setInput("")
   }
-  // 削除関数
-  const deleteNode = () =>{
-    
-    // nodes から選択したノードを削除
+
+
+  // ==================================================
+  // Delete Node
+  // ==================================================
+
+  const deleteNode = () => {
+    // ノード削除
     setNodes(
-      //filter() は、条件に合うデータだけ残す処理
-      // deleteTarget以外をnodeに入れる
-      nodes.filter((node) => node.id !== deleteTarget)
-    )
-  
-    // 削除したノードにつながるlinkも削除
-    setLinks(
-      links.filter((link) =>
-        // deleteTargetがsource target以外の部分残す
-        link.source !== deleteTarget &&
-        link.target !== deleteTarget
+      nodes.filter(
+        (node) =>
+          node.id !== deleteTarget
       )
     )
-    }
+    // リンク削除
+    setLinks(
+      links.filter(
+        (link) =>
+          link.source !== deleteTarget &&
+          link.target !== deleteTarget
+      )
+    )
+  }
 
-  //ここからReact
-  return (
-    <div> 
-  
-      {/* 追加エリア */}
-      <div>
-        <h3>情報を追加</h3>
-  
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="追加する情報を入力"
-        />
-  
-        <select
-          value={target}
-          onChange={(e) => setTarget(e.target.value)}
-        >
-          {nodes.map((node) => (
-            <option key={node.id} value={node.id}>
-              {node.id}
-            </option>
-          ))}
-        </select>
-  
-        <button onClick={addNode}>
-          追加
-        </button>
-      </div>
-  
-  
-      {/* 削除エリア */}
-      <div>
-        <h3>情報を削除</h3>
-  
-        <select
-          value={deleteTarget}
-          onChange={(e) => setDeleteTarget(e.target.value)}
-        >
-          {nodes.map((node) => (
-            <option key={node.id} value={node.id}>
-              {node.id}
-            </option>
-          ))}
-        </select>
-  
-        <button onClick={deleteNode}>
-          削除
-        </button>
-      </div>
 
-       {/* 選択したノードのメモ */}
-       {selectedNode && (
-        <div>
-          {/* メモがあればMarkdownで表示 */}
-          {selectedNode.memo ? (
-            <ReactMarkdown>
-            {selectedNode.memo}
-          </ReactMarkdown>
-          ) : (
-            <p>メモはありません。</p>
-          )
+  // ==================================================
+  // マークダウン保存
+  // ==================================================
+
+  // マークダウンを保存するボタン押された時実行
+  const saveMemo = () => {
+
+    // 選択されたノードがない場合,終了
+    if (!selectedNode) return
+
+    // 選択ノードの更新を変数に入れる
+    const updatedNodes =
+      nodes.map((node) => {
+        //今のノードが選択してるやつなら
+        if (node.id === selectedNode.id) {
+
+          // 編集したメモに更新
+          return {
+            ...node,
+            memo: editMemo,
+          }
         }
-        </div>
-      )}    
-  
-  
-      {/* グラフ */}
-      <ForceGraph2D
-        graphData={graphData}
-        linkColor={() => 'white'}
-        linkWidth={1}
 
-        // ノードを自分で描画
-        // ノード情報、図形や文字書く、現在のズーム率
-        nodeCanvasObject={(node, ctx, globalScale) =>{
+        // 選択してないやつはそのまま返す
+        return node
+      })
 
-          const label = node.id
+    // グラフ側のノードを更新
+    setNodes(updatedNodes)
 
-           // ズームしても文字サイズがある程度一定になるようにする
-           // 倍率大きくしたら、小さくなるように
-          const fontSize = 14 / globalScale
+    // 選択中のノードの中身を更新
+    setSelectedNode({
+      ...selectedNode,
+      memo: editMemo,
+    })
+  }
 
-          ctx.font = `${fontSize}px Sans-Serif`
-          // 文字幅を取得
-          const textWidth = ctx.measureText(label).width
 
-          // ノード本体
-          // 図形描画開始
-          ctx.beginPath()
+  // ==================================================
+  // UI(表示する部分)
+  // ==================================================
+  return (
+    <div>
 
-          // 円を描く
-          ctx.arc(node.x, node.y,
-              5, // 半径
-              0, 2 * Math.PI //円一周
-             )
-          ctx.fillStyle = '#2389c9'
-          ctx.fill() //塗りつぶし
+      {/* ノード追加・削除 
+      NodeForm.jsxを利用してるってこと
+      必要なデータをApp.jsxからNodeForm.jsxに渡してる
+      */}
+      <NodeForm
+        nodes={nodes}
 
-          // 文字の色
-          ctx.fillStyle = 'white'
-          
-          // 文字を入れる部分
-          ctx.fillText(
-            label,// label の名前
-            /*
-            canva は左上が（0,0）
-            */
-            node.x - textWidth / 2, //ノードの左　文字幅の半分だけ
-            node.y + 12 //ノードの下
-          )
-              }}
+        input={input}
+        setInput={setInput}
 
-          onNodeClick={(node) => {
-                setSelectedNode(node)
-              }}
+        target={target}
+        setTarget={setTarget}
+
+        deleteTarget={deleteTarget}
+        setDeleteTarget={setDeleteTarget}
+
+        addNode={addNode}
+        deleteNode={deleteNode}
       />
 
-        
+
+      {/* Markdown */}
+      <MemoPanel
+        selectedNode={selectedNode}
+
+        editMemo={editMemo}
+        setEditMemo={setEditMemo}
+
+        saveMemo={saveMemo}
+      />
+
+
+      {/* グラフ */}
+      <Graph
+        graphData={graphData}
+
+        setSelectedNode={setSelectedNode}
+        setEditMemo={setEditMemo}
+      />
+
     </div>
   )
-  
 }
+
 export default App
